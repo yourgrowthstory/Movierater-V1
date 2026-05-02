@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reelboard — share what you watched</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #f5f4f0;
+      color: #1a1a1a;
+      min-height: 100vh;
+    }
+
+    .app {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem;
+    }
+
+    .masthead {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      margin-bottom: 2.5rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid #e0ded8;
+    }
+
+    .masthead h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: #1a1a1a;
+    }
+
+    .masthead span {
+      font-size: 14px;
+      color: #888;
+      font-weight: 400;
+    }
+
+    .form-card {
+      background: #fff;
+      border: 1px solid #e8e6e0;
+      border-radius: 14px;
+      padding: 1.75rem;
+      margin-bottom: 2.5rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .form-group.full { grid-column: 1 / -1; }
+
+    .form-group label {
+      font-size: 11px;
+      font-weight: 500;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+
+    .form-group input {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      color: #1a1a1a;
+      background: #faf9f7;
+      border: 1px solid #e0ded8;
+      border-radius: 8px;
+      padding: 9px 12px;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .form-group input:focus {
+      border-color: #b0aeaa;
+      box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+    }
+
+    .form-group input::placeholder { color: #bbb; }
+
+    .rating-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .star-row {
+      display: flex;
+      gap: 3px;
+    }
+
+    .star {
+      width: 30px;
+      height: 30px;
+      cursor: pointer;
+      color: #d0cec8;
+      font-size: 24px;
+      line-height: 30px;
+      text-align: center;
+      transition: color 0.1s, transform 0.1s;
+      user-select: none;
+    }
+
+    .star:hover, .star.active { color: #E2A73A; transform: scale(1.18); }
+
+    .rating-label {
+      font-size: 13px;
+      color: #888;
+      height: 20px;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 11px;
+      margin-top: 18px;
+      background: #1a1a1a;
+      color: #fff;
+      border: none;
+      border-radius: 9px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+      letter-spacing: 0.01em;
+    }
+
+    .submit-btn:hover { opacity: 0.82; }
+    .submit-btn:active { transform: scale(0.99); }
+
+    .feed-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.1rem;
+    }
+
+    .feed-header h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      font-weight: 400;
+      color: #1a1a1a;
+    }
+
+    .count-badge {
+      font-size: 12px;
+      font-weight: 500;
+      background: #eeecea;
+      color: #888;
+      padding: 3px 12px;
+      border-radius: 999px;
+      border: 1px solid #e0ded8;
+    }
+
+    .reviews-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .review-card {
+      background: #fff;
+      border: 1px solid #e8e6e0;
+      border-radius: 14px;
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      animation: slideIn 0.25s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .score-badge {
+      min-width: 48px;
+      height: 48px;
+      border-radius: 9px;
+      background: #f5f4f0;
+      border: 1px solid #e8e6e0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .score-num {
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1;
+      font-family: 'Playfair Display', serif;
+      color: #1a1a1a;
+    }
+
+    .score-denom {
+      font-size: 10px;
+      color: #aaa;
+      font-weight: 400;
+    }
+
+    .review-body { flex: 1; min-width: 0; }
+
+    .review-title {
+      font-size: 15px;
+      font-weight: 500;
+      font-family: 'Playfair Display', serif;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 4px;
+      color: #1a1a1a;
+    }
+
+    .review-meta {
+      font-size: 13px;
+      color: #888;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .review-stars {
+      letter-spacing: -1px;
+      font-size: 13px;
+      color: #E2A73A;
+    }
+
+    .sep { opacity: 0.35; }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: #aaa;
+      font-size: 14px;
+      border: 1px dashed #e0ded8;
+      border-radius: 14px;
+      background: #faf9f7;
+    }
+
+    .empty-state .icon {
+      font-size: 36px;
+      display: block;
+      margin-bottom: 10px;
+      opacity: 0.5;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #1a1a1a;
+      color: #fff;
+      padding: 10px 22px;
+      border-radius: 999px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      transition: transform 0.3s ease;
+      pointer-events: none;
+      z-index: 100;
+      white-space: nowrap;
+    }
+
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 480px) {
+      .form-row { grid-template-columns: 1fr; }
+      .masthead h1 { font-size: 26px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app">
+  <div class="masthead">
+    <h1>Reelboard</h1>
+    <span>share what you watched</span>
+  </div>
+
+  <div class="form-card">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Your name</label>
+        <input type="text" id="userName" placeholder="e.g. Sofia" maxlength="40" />
+      </div>
+      <div class="form-group">
+        <label>Movie title</label>
+        <input type="text" id="movieTitle" placeholder="e.g. Dune: Part Two" maxlength="80" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group full">
+        <label>Rating</label>
+        <div class="rating-group">
+          <div class="star-row" id="starRow"></div>
+          <div class="rating-label" id="ratingLabel">Click to rate</div>
+        </div>
+      </div>
+    </div>
+    <button class="submit-btn" id="submitBtn">Add review</button>
+  </div>
+
+  <div class="feed-header">
+    <h2>Latest reviews</h2>
+    <span class="count-badge" id="countBadge">0 reviews</span>
+  </div>
+
+  <div class="reviews-list" id="reviewsList"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const STORAGE_KEY = 'reelboard_reviews_v1';
+
+  const ratingLabels = {
+    1: 'Unwatchable', 2: 'Very poor', 3: 'Below average', 4: 'Fair',
+    5: 'Average', 6: 'Decent', 7: 'Good', 8: 'Great',
+    9: 'Excellent', 10: 'Masterpiece'
+  };
+
+  let selectedRating = 0;
+
+  function getReviews() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+    catch { return []; }
+  }
+
+  function saveReviews(reviews) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(reviews));
+  }
+
+  function buildStars() {
+    const row = document.getElementById('starRow');
+    for (let i = 1; i <= 10; i++) {
+      const s = document.createElement('span');
+      s.className = 'star';
+      s.textContent = '★';
+      s.dataset.val = i;
+      s.addEventListener('click', () => selectRating(i));
+      s.addEventListener('mouseenter', () => highlightStars(i));
+      s.addEventListener('mouseleave', () => highlightStars(selectedRating));
+      row.appendChild(s);
+    }
+  }
+
+  function highlightStars(n) {
+    document.querySelectorAll('.star').forEach(s => {
+      s.classList.toggle('active', parseInt(s.dataset.val) <= n);
+    });
+  }
+
+  function selectRating(n) {
+    selectedRating = n;
+    highlightStars(n);
+    document.getElementById('ratingLabel').textContent = n + '/10 — ' + ratingLabels[n];
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  function escHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  document.getElementById('submitBtn').addEventListener('click', () => {
+    const name  = document.getElementById('userName').value.trim();
+    const title = document.getElementById('movieTitle').value.trim();
+    if (!name)           { showToast('Please enter your name'); return; }
+    if (!title)          { showToast('Please enter a movie title'); return; }
+    if (!selectedRating) { showToast('Please pick a rating'); return; }
+
+    const reviews = getReviews();
+    reviews.unshift({
+      id: Date.now(), name, title, rating: selectedRating,
+      ts: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+    });
+    saveReviews(reviews);
+    renderReviews();
+
+    document.getElementById('userName').value  = '';
+    document.getElementById('movieTitle').value = '';
+    selectedRating = 0;
+    highlightStars(0);
+    document.getElementById('ratingLabel').textContent = 'Click to rate';
+    showToast('Review added!');
+  });
+
+  function renderReviews() {
+    const reviews = getReviews();
+    const list  = document.getElementById('reviewsList');
+    const badge = document.getElementById('countBadge');
+    badge.textContent = reviews.length + (reviews.length === 1 ? ' review' : ' reviews');
+
+    if (!reviews.length) {
+      list.innerHTML = '<div class="empty-state"><span class="icon">🎬</span>No reviews yet — be the first!</div>';
+      return;
+    }
+
+    list.innerHTML = reviews.map(r => {
+      const filled = '★'.repeat(Math.round(r.rating / 2));
+      const empty  = '☆'.repeat(5 - Math.round(r.rating / 2));
+      return `
+        <div class="review-card">
+          <div class="score-badge">
+            <span class="score-num">${r.rating}</span>
+            <span class="score-denom">/10</span>
+          </div>
+          <div class="review-body">
+            <div class="review-title">${escHtml(r.title)}</div>
+            <div class="review-meta">
+              <span>${escHtml(r.name)}</span>
+              <span class="sep">·</span>
+              <span class="review-stars">${filled}${empty}</span>
+              <span class="sep">·</span>
+              <span>${r.ts}</span>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  buildStars();
+  renderReviews();
+</script>
+
+</body>
+</html>
