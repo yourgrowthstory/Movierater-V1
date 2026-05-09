@@ -1,5 +1,7 @@
 import { db } from './firebase-config.js';
 
+console.log('app.js loaded');
+
 const API_KEY = 'b34cf10a';
 
 const ratingLabels = {
@@ -77,6 +79,7 @@ function escHtml(str) {
 
 async function searchMovie() {
   const query = document.getElementById('movieSearch').value.trim();
+  console.log('searchMovie called with query:', query);
   if (!query) { showToast('Please enter a movie name'); return; }
 
   try {
@@ -178,7 +181,13 @@ async function renderReviews() {
 buildStars();
 renderReviews();
 
-document.getElementById('searchBtn').addEventListener('click', searchMovie);
+document.getElementById('searchBtn').addEventListener('click', () => {
+  console.log('searchBtn clicked');
+  searchMovie();
+});
 document.getElementById('movieSearch').addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') searchMovie();
+  if (e.key === 'Enter') {
+    console.log('Enter pressed');
+    searchMovie();
+  }
 });
